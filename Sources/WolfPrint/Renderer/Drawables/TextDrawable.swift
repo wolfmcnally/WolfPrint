@@ -18,8 +18,7 @@ public struct TextDrawable: Drawable {
                 continue
             }
         }
-
-        return result ?? Font.body
+        return result!
     }
 
     public init(text: String, modifiers: [Text.Modifier]) {
@@ -29,12 +28,12 @@ public struct TextDrawable: Drawable {
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil) -> CGFloat {
         let height = size.height > 0 ? size.height : otherLength ?? CGFloat.greatestFiniteMagnitude
-        return resolvedFont.font.sizeForText(text, in: CGSize(width: proposedWidth, height: height)).width
+        return resolvedFont.osFont.sizeForText(text, in: CGSize(width: proposedWidth, height: height)).width
     }
 
     public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil) -> CGFloat {
         let width = size.width > 0 ? size.width : otherLength ?? CGFloat.greatestFiniteMagnitude
-        return resolvedFont.font.sizeForText(text, in: CGSize(width: width, height: proposedHeight)).height
+        return resolvedFont.osFont.sizeForText(text, in: CGSize(width: width, height: proposedHeight)).height
     }
 }
 

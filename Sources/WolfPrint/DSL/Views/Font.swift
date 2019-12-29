@@ -87,13 +87,15 @@ public class NamedFontProvider: AnyFontBox {
 
 public struct Font: Hashable {
     public var provider: AnyFontBox
+    public var _modifiers: [Font.Modifier] = []
 
     public init(_ font: CTFont) {
         provider = CTFontProvider(font)
     }
 
-    init(provider: AnyFontBox) {
+    init(provider: AnyFontBox, modifiers: [Font.Modifier] = []) {
         self.provider = provider
+        self._modifiers = modifiers
     }
 
     public static func system(_ style: Font.TextStyle, design: Font.Design = .default) -> Font {
@@ -111,27 +113,45 @@ public struct Font: Hashable {
     public static func == (lhs: Font, rhs: Font) -> Bool {
         return lhs.provider == rhs.provider
     }
+
+    public enum Modifier: Hashable {
+        case weight(Weight)
+        case bold
+    }
 }
 
 extension Font {
-    public struct Weight: Hashable {
-        public var value: CGFloat
+    public func weight(_ w: Weight) -> Font {
+        fontWithModifier(.weight(w))
+    }
 
-        public static let ultraLight: Font.Weight = Weight(value: 100)
-        public static let thin: Font.Weight = Weight(value: 200)
-        public static let light: Font.Weight = Weight(value: 300)
-        public static let regular: Font.Weight = Weight(value: 400)
-        public static let medium: Font.Weight = Weight(value: 500)
-        public static let semibold: Font.Weight = Weight(value: 600)
-        public static let bold: Font.Weight = Weight(value: 700)
-        public static let heavy: Font.Weight = Weight(value: 800)
-        public static let black: Font.Weight = Weight(value: 900)
+    public func bold() -> Font {
+        fontWithModifier(.bold)
+    }
+
+    private func fontWithModifier(_ modifier: Modifier) -> Font {
+        let modifiers = _modifiers + [modifier]
+        return Font(provider: provider, modifiers: modifiers)
+    }
+}
+
+extension Font {
+    public enum Weight: Hashable {
+        case ultraLight
+        case thin
+        case light
+        case regular
+        case medium
+        case semibold
+        case bold
+        case heavy
+        case black
     }
 }
 
 extension Font {
     public static let largeTitle = Font.system(Font.TextStyle.largeTitle)
-    public static let title1 = Font.system(Font.TextStyle.title1)
+    public static let title = Font.system(Font.TextStyle.title)
     public static let title2 = Font.system(Font.TextStyle.title2)
     public static let title3 = Font.system(Font.TextStyle.title3)
     public static var headline = Font.system(Font.TextStyle.headline)
@@ -144,7 +164,7 @@ extension Font {
 
     public enum TextStyle: CaseIterable {
         case largeTitle
-        case title1
+        case title
         case title2
         case title3
         case headline

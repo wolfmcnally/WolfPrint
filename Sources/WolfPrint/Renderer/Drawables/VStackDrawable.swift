@@ -4,10 +4,12 @@ struct VStackDrawable: Drawable {
     public var origin: CGPoint = .zero
     public var size: CGSize = .zero
 
-    public var alignment: HorizontalAlignment
+    public let alignment: HorizontalAlignment
+    public let spacing: CGFloat?
 
-    init(alignment: HorizontalAlignment) {
+    init(alignment: HorizontalAlignment, spacing: CGFloat?) {
         self.alignment = alignment
+        self.spacing = spacing
     }
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil) -> CGFloat {
@@ -21,6 +23,6 @@ struct VStackDrawable: Drawable {
 
 extension VStackDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "VStack [\(origin), \(size)]"
+        return "VStack [\(origin), \(size), \(alignment), \(String(describing: spacing))]"
     }
 }

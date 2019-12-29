@@ -26,7 +26,10 @@ public class HostingContext<Content: View> {
 
     public func draw() {
         self.rootNode = ViewNode(value: RootDrawable())
-        (rootView.body as? ViewBuildable)?.buildDebugTree(tree: &rootNode, parent: rootNode)
+        let rootViewBody = rootView.body
+        if let a = rootViewBody as? ViewBuildable {
+            a.buildDebugTree(tree: &rootNode, parent: rootNode)
+        }
 
         calculateTreeSizes()
         print(rootNode.lineBasedDescription.replacingOccurrences(of: "WolfPrint.", with: ""))
@@ -78,14 +81,22 @@ public class HostingContext<Content: View> {
         }
 
         if let textNode = node.value as? TextDrawable {
-            var textColor = Color.primary
+            var textColor = foregroundColor ?? Color.primary
             textNode.modifiers.forEach {
                 if case let .color(color) = $0, let c = color {
                     textColor = c
                 }
             }
 
+//            var textFont = inheritedFont
+//            textNode.modifiers.forEach {
+//                if case let .font(font) = $0, let f = font {
+//                    textFont = f
+//                }
+//            }
+
             let attributes: [NSAttributedString.Key : Any] = [
+                .font: textNode.resolvedFont.osFont,
                 .foregroundColor: textColor.uiColor(for: colorScheme)
             ]
             (textNode.text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
