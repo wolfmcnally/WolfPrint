@@ -275,12 +275,14 @@ extension ViewNode {
 
         // Process items that wont fit
         if remainingChildren > 0 {
-            var proposedHeight = remainingHeight / CGFloat(remainingChildren)
+            print("🔥 remainingChildren: \(remainingChildren)")
+            let proposedHeight = remainingHeight / CGFloat(remainingChildren)
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
                 let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight)
                 child.value.size.width = wantedWidth
+                child.value.size.height = proposedHeight
                 remainingHeight -= child.value.size.height
 
                 processedNodeIndices.insert(index)
@@ -288,22 +290,7 @@ extension ViewNode {
                 child.processor = "* VStack"
 
                 child.calculateSize(givenWidth: wantedWidth, givenHeight: proposedHeight)
-            }
-
-            proposedHeight = remainingHeight / CGFloat(remainingChildren)
-            for (index, child) in children.enumerated() {
-                guard !processedNodeIndices.contains(index) else { continue }
-
-                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight)
-                child.value.size.width = wantedWidth
-                child.value.size.height = proposedHeight
-                remainingHeight -= proposedHeight
-
-                processedNodeIndices.insert(index)
-                remainingChildren -= 1
-                child.processor = "* VStack"
-
-                child.calculateSize(givenWidth: wantedWidth, givenHeight: proposedHeight)
+                print("🔥 \(child.value)")
             }
         }
 
