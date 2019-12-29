@@ -17,6 +17,27 @@ public struct EdgeInsets: Equatable {
     public init() {
         self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
     }
+
+    public var horizontal: CGFloat {
+        leading + trailing
+    }
+
+    public var vertical: CGFloat {
+        top + bottom
+    }
+
+    static func + (lhs: EdgeInsets, rhs: EdgeInsets) -> EdgeInsets {
+        EdgeInsets(
+            top: lhs.top + rhs.top,
+            leading: lhs.leading + rhs.leading,
+            bottom: lhs.bottom + rhs.bottom,
+            trailing: lhs.trailing + rhs.trailing
+        )
+    }
+
+    static func += (lhs: inout EdgeInsets, rhs: EdgeInsets) {
+        lhs = lhs + rhs
+    }
 }
 
 extension EdgeInsets {

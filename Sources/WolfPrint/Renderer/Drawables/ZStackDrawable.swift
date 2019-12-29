@@ -4,8 +4,10 @@ struct ZStackDrawable: Drawable {
     public var origin: CGPoint = .zero
     public var size: CGSize = .zero
 
-    init() {
+    public let alignment: Alignment
 
+    init(alignment: Alignment) {
+        self.alignment = alignment
     }
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil) -> CGFloat {

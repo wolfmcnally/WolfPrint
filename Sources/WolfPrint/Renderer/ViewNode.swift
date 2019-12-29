@@ -43,17 +43,17 @@ extension ViewNode {
         switch value {
         case let drawable as HStackDrawable:
             calculateNodeWithHorizontallyStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
-        case is ZStackDrawable:
-            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight)
         case let drawable as VStackDrawable:
             calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
+        case let drawable as ZStackDrawable:
+            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment)
         default:
-            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight)
+            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: .center)
         }
     }
 
-    private func calculateNodeWithZStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat) {
-        for (_, child) in children.enumerated() {
+    private func calculateNodeWithZStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: Alignment) {
+        for child in children {
             child.processor = "* ZStack"
             child.calculateSize(givenWidth: givenWidth, givenHeight: givenHeight)
             if !child.value.passthrough {
@@ -64,8 +64,13 @@ extension ViewNode {
             }
         }
 
-        value.size.width = children.reduce(0, { $0 + $1.value.size.width }) // + internalSpacingRequirements(for: spacing)
-        value.size.height = children.reduce(0, { $0 + $1.value.size.height }) // + internalSpacingRequirements(for: spacing)
+        value.size.width = children.map({ $0.value.size.width }).max()!
+        value.size.height = children.map({ $0.value.size.height }).max()!
+
+        if let v = value as? ModifiedContentDrawable<PaddingModifier> {
+            value.size.width += v.modifier.value.horizontal
+            value.size.height += v.modifier.value.vertical
+        }
 
         processor = "ZStack"
     }
@@ -193,7 +198,7 @@ extension ViewNode {
         for child in children {
             child.value.origin.x += offset
         }
-        
+
         processor = "HStack"
     }
 

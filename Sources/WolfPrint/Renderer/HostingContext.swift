@@ -32,7 +32,9 @@ public class HostingContext<Content: View> {
         }
 
         calculateTreeSizes()
-        print(rootNode.lineBasedDescription.replacingOccurrences(of: "WolfPrint.", with: ""))
+        if debugViews {
+            print(rootNode.lineBasedDescription.replacingOccurrences(of: "WolfPrint.", with: ""))
+        }
         drawNodesRecursively(node: rootNode)
     }
 
@@ -44,7 +46,12 @@ public class HostingContext<Content: View> {
     private func drawNodesRecursively(node: ViewNode) {
         guard node.value.size.width > 0 else { return }
 
-        let parentPadding = (node.parent?.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value ?? EdgeInsets()
+        var ancestorPadding = EdgeInsets()
+        for ancestor in node.ancestors {
+            if let padding = (ancestor.value as? ModifiedContentDrawable<PaddingModifier>)?.modifier.value {
+                ancestorPadding += padding
+            }
+        }
 
         var foregroundColor: Color?
         for ancestor in node.ancestors {
@@ -62,11 +69,11 @@ public class HostingContext<Content: View> {
             }
         }
 
+        let x = node.ancestors.map({ $0.value.origin.x }).reduce(0, +) + node.value.origin.x + ancestorPadding.leading
+        let y = node.ancestors.map({ $0.value.origin.y }).reduce(0, +) + node.value.origin.y + ancestorPadding.top
+
         let width = node.value.size.width
         let height = node.value.size.height
-
-        let x = node.ancestors.reduce(0, { $0 + $1.value.origin.x }) + node.value.origin.x + parentPadding.leading
-        let y = node.ancestors.reduce(0, { $0 + $1.value.origin.y }) + node.value.origin.y + parentPadding.top
 
         let rect = CGRect(x: x, y: y, width: width, height: height)
 

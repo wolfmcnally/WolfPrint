@@ -1,6 +1,6 @@
 extension ZStack: ViewBuildable {
     public func buildDebugTree(tree: inout ViewNode, parent: ViewNode) {
-        let node = ViewNode(value: ZStackDrawable())
+        let node = ViewNode(value: ZStackDrawable(alignment: _tree.root.alignment))
         parent.addChild(node: node)
 
         ViewExtractor.extractViews(contents: _tree.content).forEach {
