@@ -3,6 +3,11 @@ import CoreGraphics
 public struct ModifiedContentDrawable<Modifier>: Drawable where Modifier : ViewModifier {
     public var origin: CGPoint = .zero
     public var size: CGSize = .zero
+    {
+        didSet {
+            print("didSet: \(size)")
+        }
+    }
 
     let modifier: Modifier
 

@@ -34,6 +34,10 @@ extension ViewNode {
     }
 
     public func calculateChildSizes(givenWidth: CGFloat, givenHeight: CGFloat) {
+        if value is ModifiedContentDrawable<PaddingModifier> {
+            print("🔥 \(self)")
+            print("💦 givenWidth: \(givenWidth)")//", wantedWidth: \(wantedWidth)")
+        }
         switch value {
         case let drawable as HStackDrawable:
             layoutHStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
@@ -55,13 +59,13 @@ extension ViewNode {
 
         var offeredWidth = givenWidth
         var offeredHeight = givenHeight
-
         if let padding = value as? ModifiedContentDrawable<PaddingModifier> {
             offeredWidth -= padding.modifier.value.horizontal
             offeredHeight -= padding.modifier.value.vertical
         }
 
         for child in children {
+//            guard child.value.size == .zero else { continue } // HACK!
             child.calculateChildSizes(givenWidth: offeredWidth, givenHeight: offeredHeight)
         }
     }
@@ -105,17 +109,6 @@ extension ViewNode {
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
             }
-
-//            if child.value is TextDrawable {
-//                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: child)
-//                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: child)
-//                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
-//
-//                remainingWidth -= wantedWidth
-//
-//                processedNodeIndices.insert(index)
-//                remainingChildren -= 1
-//            }
         }
 
         // Process items that would fit inside the proposal
@@ -129,7 +122,7 @@ extension ViewNode {
                 let proposedWidth = remainingWidth / CGFloat(remainingChildren)
                 let wantedWidth = child.value.wantedWidthForProposal(proposedWidth, otherLength: givenHeight, node: child)
                 // When an element fits, it should take what it needs
-                if proposedWidth > wantedWidth {
+                if wantedWidth < proposedWidth {
                     smallOneFound = true
                     let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: wantedWidth, node: child)
                     child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
@@ -237,17 +230,6 @@ extension ViewNode {
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
             }
-
-//            if child.value is TextDrawable {
-//                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: child)
-//                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: child)
-//                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
-//
-//                remainingHeight -= wantedHeight
-//
-//                processedNodeIndices.insert(index)
-//                remainingChildren -= 1
-//            }
         }
 
         // Process items that would fit inside the proposal
@@ -261,7 +243,7 @@ extension ViewNode {
                 let proposedHeight = remainingHeight / CGFloat(remainingChildren)
                 let wantedHeight = child.value.wantedHeightForProposal(proposedHeight, otherLength: givenWidth, node: child)
                 // When an element fits, it should take what it needs
-                if proposedHeight > wantedHeight {
+                if wantedHeight < proposedHeight {
                     smallOneFound = true
                     let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: wantedHeight, node: child)
                     child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
