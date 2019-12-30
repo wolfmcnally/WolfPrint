@@ -63,6 +63,7 @@ public class HostingContext<Content: View> {
     }
 
     private func drawNodesRecursively(node: ViewNode) {
+        //print("draw: \(node)")
         guard node.value.size.width > 0 else { return }
 
         var ancestorPadding = EdgeInsets()
@@ -101,7 +102,7 @@ public class HostingContext<Content: View> {
             context.fill(rect)
         }
 
-        if let backgroundNode = node.value as? ModifiedContentDrawable<_BackgroundModifier<Color>> {
+        if let backgroundNode = node.value as? ModifiedContentDrawable<BackgroundModifier<Color>> {
             context.setFillColor(backgroundNode.modifier.background.cgColor(for: colorScheme))
             context.fill(rect)
         }

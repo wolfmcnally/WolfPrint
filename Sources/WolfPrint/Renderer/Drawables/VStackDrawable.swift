@@ -13,13 +13,13 @@ struct VStackDrawable: Drawable {
     }
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        return proposedWidth
+        node.calculateChildSizes(givenWidth: proposedWidth, givenHeight: otherLength!)
+        return node.value.size.width
     }
 
     public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
         node.calculateChildSizes(givenWidth: otherLength!, givenHeight: proposedHeight)
         return node.value.size.height
-//        return proposedHeight
     }
 }
 

@@ -8,11 +8,19 @@ public struct SpacerDrawable: Drawable {
     }
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        return proposedWidth
+        if node.parent?.value is VStackDrawable {
+            return 0
+        } else {
+            return proposedWidth
+        }
     }
 
     public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        return proposedHeight
+        if node.parent?.value is HStackDrawable {
+            return 0
+        } else {
+            return proposedHeight
+        }
     }
 }
 

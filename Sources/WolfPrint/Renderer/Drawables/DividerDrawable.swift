@@ -14,7 +14,7 @@ public struct DividerDrawable: Drawable {
         if axis == .horizontal {
             return proposedWidth
         } else {
-            return 1
+            return 0.5
         }
     }
 
@@ -22,7 +22,7 @@ public struct DividerDrawable: Drawable {
         if axis == .vertical {
             return proposedHeight
         } else {
-            return 1
+            return 0.5
         }
     }
 }

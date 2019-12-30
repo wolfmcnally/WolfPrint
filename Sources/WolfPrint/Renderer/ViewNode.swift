@@ -178,7 +178,7 @@ extension ViewNode {
         value.size.height = children.map({ $0.value.size.height }).max()!
 
         // Align vertically in the given area
-        let alignmentHeight = givenHeight
+        let alignmentHeight = value.size.height
         switch alignment {
         case .top:
             for child in children {
@@ -310,7 +310,7 @@ extension ViewNode {
         value.size.height = children.map({ $0.value.size.height }).reduce(0, +) + internalSpacingRequirements(for: spacing)
 
         // Align horizontally in the given area
-        let alignmentWidth = givenWidth
+        let alignmentWidth = value.size.width
         switch alignment {
         case .leading:
             for child in children {

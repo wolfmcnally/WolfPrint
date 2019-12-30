@@ -15,11 +15,11 @@ struct HStackDrawable: Drawable {
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
         node.calculateChildSizes(givenWidth: proposedWidth, givenHeight: otherLength!)
         return node.value.size.width
-//        return proposedWidth
     }
 
     public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        return proposedHeight
+        node.calculateChildSizes(givenWidth: otherLength!, givenHeight: proposedHeight)
+        return node.value.size.height
     }
 }
 
