@@ -35,21 +35,30 @@ public struct Text: View, Equatable {
     }
 
     public enum Modifier: Equatable {
-        case color(Color?)
+        case foregroundColor(Color?)
         case font(Font?)
-        // case italic
-        // case weight(Font.Weight?)
+        case fontWeight(Font.Weight?)
+        case bold
+        case italic
+        // case strikethrough((Bool, Color?))
+        // case underline((Bool, Color?))
         // case kerning(CGFloat)
+        // case baselineOffset(CGFloat)
         // case tracking(CGFloat)
-        // case baseline(CGFloat)
-        // case rounded
-        // case anyTextModifier(AnyTextModifier)
+        // case baselineOffset(CGFloat)
+
         public static func == (lhs: Text.Modifier, rhs: Text.Modifier) -> Bool {
             switch (lhs, rhs) {
-            case (.color(let colorA), .color(let colorB)):
+            case (.foregroundColor(let colorA), .foregroundColor(let colorB)):
                 return colorA == colorB
             case (.font(let fontA), .font(let fontB)):
                 return fontA == fontB
+            case (.bold, .bold):
+                return true
+            case (.italic, .italic):
+                return true
+            case (.fontWeight(let weightA), .fontWeight(let weightB)):
+                return weightA == weightB
             default:
                 return false
             }
@@ -80,11 +89,23 @@ public struct Text: View, Equatable {
 
 extension Text {
     public func foregroundColor(_ color: Color?) -> Text {
-        textWithModifier(Text.Modifier.color(color))
+        textWithModifier(.foregroundColor(color))
     }
 
     public func font(_ font: Font?) -> Text {
-        textWithModifier(Text.Modifier.font(font))
+        textWithModifier(.font(font))
+    }
+
+    public func bold() -> Text {
+        textWithModifier(.bold)
+    }
+
+    public func italic() -> Text {
+        textWithModifier(.italic)
+    }
+
+    public func fontWeight(_ weight: Font.Weight?) -> Text {
+        textWithModifier(.fontWeight(weight))
     }
 
     private func textWithModifier(_ modifier: Modifier) -> Text {

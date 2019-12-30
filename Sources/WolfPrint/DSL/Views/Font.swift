@@ -117,6 +117,7 @@ public struct Font: Hashable {
     public enum Modifier: Hashable {
         case weight(Weight)
         case bold
+        case italic
     }
 }
 
@@ -127,6 +128,10 @@ extension Font {
 
     public func bold() -> Font {
         fontWithModifier(.bold)
+    }
+
+    public func italic() -> Font {
+        fontWithModifier(.italic)
     }
 
     private func fontWithModifier(_ modifier: Modifier) -> Font {

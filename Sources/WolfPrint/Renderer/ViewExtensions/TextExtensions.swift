@@ -22,49 +22,43 @@ extension Text: ViewBuildable {
 
 extension Font {
     var osFont: UIFont {
+        let providedFont: UIFont
+
         switch provider {
         case let provider as CTFontProvider:
-            return provider.font as UIFont
+            providedFont = provider.font as UIFont
         case let provider as TextStyleProvider:
-            var fontWeight = Font.Weight.regular
-            for modifier in _modifiers {
-                switch modifier {
-                case .weight(let w):
-                    fontWeight = w
-                case .bold:
-                    fontWeight = .bold
-                }
-            }
-
             let style = Self.uiFontStyle(for: provider.style)
-            let metrics = UIFontMetrics(forTextStyle: style)
             let design = Self.uiFontDesign(for: provider.design)
             let desc = UIFontDescriptor.preferredFontDescriptor(withTextStyle: style).withDesign(design)!
-            let weight = Self.uiFontWeight(for: fontWeight)
-            let font = UIFont.systemFont(ofSize: desc.pointSize, weight: weight)
-            return metrics.scaledFont(for: font)
+            providedFont = UIFont(descriptor: desc, size: 0)
         case let provider as SystemProvider:
-            var weight = provider.weight
-            for modifier in _modifiers {
-                switch modifier {
-                case .weight(let w):
-                    weight = w
-                case .bold:
-                    weight = .bold
-                }
-            }
-            let font = UIFont.systemFont(ofSize: provider.size, weight: Self.uiFontWeight(for: weight))
-            let descriptor = font.fontDescriptor.withDesign(Self.uiFontDesign(for: provider.design))!
-            return UIFont(descriptor: descriptor, size: 0)
+            let weight = Self.uiFontWeight(for: provider.weight)
+            let size = provider.size
+            let design = Self.uiFontDesign(for: provider.design)
+            let font = UIFont.systemFont(ofSize: size, weight: weight)
+            let descriptor = font.fontDescriptor.withDesign(design)!
+            providedFont = UIFont(descriptor: descriptor, size: 0)
         case let provider as NamedFontProvider:
             let descriptor = UIFontDescriptor(name: provider.name, size: provider.size)
             return UIFont(descriptor: descriptor, size: 0)
         default:
             fatalError()
         }
+
+        return _modifiers.reduce(providedFont) { font, modifier in
+            switch modifier {
+            case .weight(let weight):
+                return font.applyWeight(Self.uiFontWeight(for: weight))
+            case .bold:
+                return font.applyBold
+            case .italic:
+                return font.applyItalic
+            }
+        }
     }
 
-    private static func uiFontStyle(for style: Font.TextStyle) -> UIFont.TextStyle {
+    static func uiFontStyle(for style: Font.TextStyle) -> UIFont.TextStyle {
         switch style {
         case .body:
             return .body
@@ -91,7 +85,7 @@ extension Font {
         }
     }
 
-    private static func uiFontDesign(for design: Font.Design) -> UIFontDescriptor.SystemDesign {
+    static func uiFontDesign(for design: Font.Design) -> UIFontDescriptor.SystemDesign {
         switch design {
         case .default:
             return .default
@@ -104,7 +98,7 @@ extension Font {
         }
     }
 
-    private static func uiFontWeight(for weight: Font.Weight) -> UIFont.Weight {
+    static func uiFontWeight(for weight: Font.Weight) -> UIFont.Weight {
         switch weight {
         case .ultraLight:
             return .ultraLight
@@ -133,5 +127,42 @@ extension UIFont {
         let attributes: [NSAttributedString.Key: Any] = [.font: self]
         let bounds = (text as NSString).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
         return bounds.size
+    }
+}
+
+extension UIFont {
+    var applyBold: UIFont {
+        let descriptor = fontDescriptor
+        var traits = descriptor.symbolicTraits
+        traits.insert(.traitBold)
+        guard let newDescriptor = descriptor.withSymbolicTraits(traits) else { return self }
+        return UIFont(descriptor: newDescriptor, size: 0)
+    }
+
+    var applyItalic: UIFont {
+        let descriptor = fontDescriptor
+        var traits = descriptor.symbolicTraits
+        traits.insert(.traitItalic)
+        guard let newDescriptor = descriptor.withSymbolicTraits(traits) else { return self }
+        return UIFont(descriptor: newDescriptor, size: 0)
+    }
+
+    var isItalic: Bool {
+        return fontDescriptor.symbolicTraits.contains(.traitItalic)
+    }
+
+    func applyWeight(_ weight: UIFont.Weight) -> UIFont {
+        let descriptor = fontDescriptor
+        var traits = (descriptor.fontAttributes[.traits] as? [UIFontDescriptor.TraitKey: Any]) ?? [:]
+        traits[.weight] = weight.rawValue as NSNumber
+        let newDescriptor = descriptor.addingAttributes([.traits: traits])
+        let weightedFont = UIFont(descriptor: newDescriptor, size: 0)
+        let resultFont: UIFont
+        if isItalic {
+            resultFont = weightedFont.applyItalic
+        } else {
+            resultFont = weightedFont
+        }
+        return resultFont
     }
 }

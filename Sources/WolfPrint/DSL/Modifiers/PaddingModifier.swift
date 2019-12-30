@@ -24,6 +24,32 @@ public struct PaddingModifier: ViewModifier {
     init(_ length: CGFloat) {
         self.value = EdgeInsets(top: length, leading: length, bottom: length, trailing: length)
     }
+
+    public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat?, node: ViewNode) -> CGFloat {
+        let child = node.children.first!
+        let widthLessPadding = proposedWidth - value.horizontal
+        let otherLengthLessPadding: CGFloat?
+        if let otherLength = otherLength {
+            otherLengthLessPadding = otherLength - value.vertical
+        } else {
+            otherLengthLessPadding = nil
+        }
+        let childWantedWidth = child.value.wantedWidthForProposal(widthLessPadding, otherLength: otherLengthLessPadding, node: child)
+        return childWantedWidth + value.horizontal
+    }
+
+    public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat?, node: ViewNode) -> CGFloat {
+        let child = node.children.first!
+        let heightLessPadding = proposedHeight - value.vertical
+        let otherLengthLessPadding: CGFloat?
+        if let otherLength = otherLength {
+            otherLengthLessPadding = otherLength - value.horizontal
+        } else {
+            otherLengthLessPadding = nil
+        }
+        let childWantedHeight = child.value.wantedHeightForProposal(heightLessPadding, otherLength: otherLengthLessPadding, node: child)
+        return childWantedHeight + value.vertical
+    }
 }
 
 extension PaddingModifier: CustomStringConvertible {

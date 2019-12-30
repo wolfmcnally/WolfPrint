@@ -10,7 +10,7 @@ public struct DividerDrawable: Drawable {
         self.axis = axis
     }
 
-    public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil) -> CGFloat {
+    public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
         if axis == .horizontal {
             return proposedWidth
         } else {
@@ -18,7 +18,7 @@ public struct DividerDrawable: Drawable {
         }
     }
 
-    public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil) -> CGFloat {
+    public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
         if axis == .vertical {
             return proposedHeight
         } else {

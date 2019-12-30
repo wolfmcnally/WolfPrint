@@ -1,4 +1,4 @@
-public struct ModifiedContent<Content, Modifier> {
+public struct ModifiedContent<Content, Modifier> where Modifier: ViewModifier {
     public var content: Content
     public var modifier: Modifier
     public init(content: Content, modifier: Modifier) {
@@ -7,7 +7,7 @@ public struct ModifiedContent<Content, Modifier> {
     }
 }
 
-extension ModifiedContent: View where Content: View, Modifier: ViewModifier {
+extension ModifiedContent: View where Content: View {
     public typealias Body = Never
     public var body: ModifiedContent<Content, Modifier>.Body {
         fatalError()

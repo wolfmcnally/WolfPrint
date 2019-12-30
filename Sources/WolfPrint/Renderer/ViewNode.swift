@@ -57,8 +57,8 @@ extension ViewNode {
             child.processor = "* ZStack"
             child.calculateSize(givenWidth: givenWidth, givenHeight: givenHeight)
             if !child.value.passthrough {
-                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight)
-                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth)
+                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: child)
+                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: child)
                 child.value.size.width = wantedWidth
                 child.value.size.height = wantedHeight
             }
@@ -93,8 +93,8 @@ extension ViewNode {
 
             // Images have their own intrinsic size
             if child.value is ImageDrawable {
-                let width = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil)
-                child.value.size.height = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil)
+                let width = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
+                child.value.size.height = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
                 child.value.size.width = width
                 remainingWidth -= width
 
@@ -105,8 +105,8 @@ extension ViewNode {
 
             // Dividers claim the whole height that is given and set their own width
             if child.value is DividerDrawable {
-                let width = child.value.wantedWidthForProposal(givenWidth, otherLength: nil)
-                child.value.size.height = child.value.wantedHeightForProposal(givenHeight, otherLength: nil)
+                let width = child.value.wantedWidthForProposal(givenWidth, otherLength: nil, node: child)
+                child.value.size.height = child.value.wantedHeightForProposal(givenHeight, otherLength: nil, node: child)
                 child.value.size.width = width
                 remainingWidth -= width
 
@@ -125,11 +125,11 @@ extension ViewNode {
                 guard !processedNodeIndices.contains(index) else { continue }
 
                 let proposedWidth = remainingWidth / CGFloat(remainingChildren)
-                let wantedWidth = child.value.wantedWidthForProposal(proposedWidth, otherLength: givenHeight)
+                let wantedWidth = child.value.wantedWidthForProposal(proposedWidth, otherLength: givenHeight, node: child)
                 // When an element fits, it should take what it needs
                 if proposedWidth > wantedWidth {
                     smallOneFound = true
-                    let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: wantedWidth)
+                    let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: wantedWidth, node: child)
                     child.value.size.height = wantedHeight
                     child.value.size.width = wantedWidth
                     remainingWidth -= wantedWidth
@@ -152,7 +152,7 @@ extension ViewNode {
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
-                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: proposedWidth)
+                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: proposedWidth, node: child)
                 child.value.size.height = wantedHeight
                 child.value.size.width = proposedWidth
                 remainingWidth -= proposedWidth
@@ -220,8 +220,8 @@ extension ViewNode {
 
             // Images have their own intrinsic size
             if child.value is ImageDrawable {
-                let height = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil)
-                child.value.size.width = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil)
+                let height = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
+                child.value.size.width = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
                 child.value.size.height = height
                 remainingHeight -= height
 
@@ -232,8 +232,8 @@ extension ViewNode {
 
             // Dividers claim the whole width that is given and set their own height
             if child.value is DividerDrawable {
-                let height = child.value.wantedHeightForProposal(givenHeight, otherLength: nil)
-                child.value.size.width = child.value.wantedWidthForProposal(givenWidth, otherLength: nil)
+                let height = child.value.wantedHeightForProposal(givenHeight, otherLength: nil, node: child)
+                child.value.size.width = child.value.wantedWidthForProposal(givenWidth, otherLength: nil, node: child)
                 child.value.size.height = height
                 remainingHeight -= height
 
@@ -252,11 +252,11 @@ extension ViewNode {
                 guard !processedNodeIndices.contains(index) else { continue }
 
                 let proposedHeight = remainingHeight / CGFloat(remainingChildren)
-                let wantedHeight = child.value.wantedHeightForProposal(proposedHeight, otherLength: givenWidth)
+                let wantedHeight = child.value.wantedHeightForProposal(proposedHeight, otherLength: givenWidth, node: child)
                 // When an element fits, it should take what it needs
                 if proposedHeight > wantedHeight {
                     smallOneFound = true
-                    let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: wantedHeight)
+                    let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: wantedHeight, node: child)
                     child.value.size.width = wantedWidth
                     child.value.size.height = wantedHeight
                     remainingHeight -= wantedHeight
@@ -275,12 +275,11 @@ extension ViewNode {
 
         // Process items that wont fit
         if remainingChildren > 0 {
-            print("🔥 remainingChildren: \(remainingChildren)")
             let proposedHeight = remainingHeight / CGFloat(remainingChildren)
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
-                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight)
+                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight, node: child)
                 child.value.size.width = wantedWidth
                 child.value.size.height = proposedHeight
                 remainingHeight -= child.value.size.height
@@ -290,7 +289,6 @@ extension ViewNode {
                 child.processor = "* VStack"
 
                 child.calculateSize(givenWidth: wantedWidth, givenHeight: proposedHeight)
-                print("🔥 \(child.value)")
             }
         }
 

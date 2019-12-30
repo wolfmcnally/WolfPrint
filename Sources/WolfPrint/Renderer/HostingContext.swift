@@ -90,7 +90,7 @@ public class HostingContext<Content: View> {
         if let textNode = node.value as? TextDrawable {
             var textColor = foregroundColor ?? Color.primary
             textNode.modifiers.forEach {
-                if case let .color(color) = $0, let c = color {
+                if case let .foregroundColor(color) = $0, let c = color {
                     textColor = c
                 }
             }

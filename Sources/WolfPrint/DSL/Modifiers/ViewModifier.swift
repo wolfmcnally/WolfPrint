@@ -1,12 +1,28 @@
+import CoreGraphics
+
 public protocol ViewModifier {
     associatedtype Body: View
     typealias Content = _ViewModifier_Content<Self>
     func body(content: Self.Content) -> Self.Body
+    func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat?, node: ViewNode) -> CGFloat
+    func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat?, node: ViewNode) -> CGFloat
 }
 
 extension ViewModifier where Self.Body == Never {
     public func body(content: Self.Content) -> Self.Body {
         fatalError()
+    }
+}
+
+extension ViewModifier {
+    public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat?, node: ViewNode) -> CGFloat {
+        let child = node.children.first!
+        return child.value.wantedWidthForProposal(proposedWidth, otherLength: otherLength, node: child)
+    }
+
+    public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat?, node: ViewNode) -> CGFloat {
+        let child = node.children.first!
+        return child.value.wantedHeightForProposal(proposedHeight, otherLength: otherLength, node: child)
     }
 }
 
