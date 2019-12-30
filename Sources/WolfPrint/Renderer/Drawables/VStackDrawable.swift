@@ -17,7 +17,9 @@ struct VStackDrawable: Drawable {
     }
 
     public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        return proposedHeight
+        node.calculateChildSizes(givenWidth: otherLength!, givenHeight: proposedHeight)
+        return node.value.size.height
+//        return proposedHeight
     }
 }
 

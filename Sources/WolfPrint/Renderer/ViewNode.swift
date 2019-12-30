@@ -2,18 +2,14 @@ import Foundation
 import CoreGraphics
 
 public final class ViewNode: Node {
-//    public typealias Value = Drawable
     public var value: Drawable
     public weak var parent: ViewNode?
     public var children: [ViewNode]
-//    public var spacing: CGFloat = 8
     public var uuid = UUID()
-    public var processor: String
 
     public init(value: Drawable) {
         self.value = value
         self.children = []
-        self.processor = ""
     }
 }
 
@@ -30,52 +26,47 @@ extension ViewNode: CustomStringConvertible {
 }
 
 extension ViewNode {
-    private static let defaultSpacing: CGFloat = 0
+    private static let defaultSpacing: CGFloat = 8
 
     private func internalSpacingRequirements(for spacing: CGFloat) -> CGFloat {
         let numberOfSpacings = degree - 1
         return CGFloat(numberOfSpacings) * spacing
     }
 
-    public func calculateSize(givenWidth: CGFloat, givenHeight: CGFloat) {
-        guard isBranch else { return }
-
+    public func calculateChildSizes(givenWidth: CGFloat, givenHeight: CGFloat) {
         switch value {
         case let drawable as HStackDrawable:
-            calculateNodeWithHorizontallyStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
+            layoutHStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
         case let drawable as VStackDrawable:
-            calculateNodeWithVerticallyStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
+            layoutVStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)
         case let drawable as ZStackDrawable:
-            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment)
+            layoutZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment)
         default:
-            calculateNodeWithZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: .center)
+            layoutZStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: .center)
         }
     }
 
-    private func calculateNodeWithZStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: Alignment) {
+    private func layoutZStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: Alignment) {
+        let wantedWidth = value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: self)
+        let wantedHeight = value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: self)
+        value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
+        guard hasChildren else { return }
+
+        var offeredWidth = givenWidth
+        var offeredHeight = givenHeight
+
+        if let padding = value as? ModifiedContentDrawable<PaddingModifier> {
+            offeredWidth -= padding.modifier.value.horizontal
+            offeredHeight -= padding.modifier.value.vertical
+        }
+
         for child in children {
-            child.processor = "* ZStack"
-            child.calculateSize(givenWidth: givenWidth, givenHeight: givenHeight)
-            if !child.value.passthrough {
-                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: child)
-                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: child)
-                child.value.size.width = wantedWidth
-                child.value.size.height = wantedHeight
-            }
+            child.calculateChildSizes(givenWidth: offeredWidth, givenHeight: offeredHeight)
         }
-
-        value.size.width = children.map({ $0.value.size.width }).max()!
-        value.size.height = children.map({ $0.value.size.height }).max()!
-
-        if let v = value as? ModifiedContentDrawable<PaddingModifier> {
-            value.size.width += v.modifier.value.horizontal
-            value.size.height += v.modifier.value.vertical
-        }
-
-        processor = "ZStack"
     }
 
-    private func calculateNodeWithHorizontallyStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: VerticalAlignment, spacing _spacing: CGFloat?) {
+    private func layoutHStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: VerticalAlignment, spacing _spacing: CGFloat?) {
         let spacing = _spacing ?? Self.defaultSpacing
 
         // Substract all spacings from the width
@@ -93,27 +84,38 @@ extension ViewNode {
 
             // Images have their own intrinsic size
             if child.value is ImageDrawable {
-                let width = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
-                child.value.size.height = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
-                child.value.size.width = width
-                remainingWidth -= width
+                let wantedWidth = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
+                let wantedHeight = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
+                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
+                remainingWidth -= wantedWidth
 
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
-                child.processor = "* HStack"
             }
 
             // Dividers claim the whole height that is given and set their own width
             if child.value is DividerDrawable {
-                let width = child.value.wantedWidthForProposal(givenWidth, otherLength: nil, node: child)
-                child.value.size.height = child.value.wantedHeightForProposal(givenHeight, otherLength: nil, node: child)
-                child.value.size.width = width
-                remainingWidth -= width
+                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: nil, node: child)
+                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: nil, node: child)
+                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
+                remainingWidth -= wantedWidth
 
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
-                child.processor = "* HStack"
             }
+
+//            if child.value is TextDrawable {
+//                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: child)
+//                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: child)
+//                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+//
+//                remainingWidth -= wantedWidth
+//
+//                processedNodeIndices.insert(index)
+//                remainingChildren -= 1
+//            }
         }
 
         // Process items that would fit inside the proposal
@@ -130,15 +132,14 @@ extension ViewNode {
                 if proposedWidth > wantedWidth {
                     smallOneFound = true
                     let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: wantedWidth, node: child)
-                    child.value.size.height = wantedHeight
-                    child.value.size.width = wantedWidth
+                    child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
                     remainingWidth -= wantedWidth
 
                     processedNodeIndices.insert(index)
                     remainingChildren -= 1
-                    child.processor = "* HStack"
 
-                    child.calculateSize(givenWidth: wantedWidth, givenHeight: wantedHeight)
+                    child.calculateChildSizes(givenWidth: wantedWidth, givenHeight: wantedHeight)
                 }
             }
             if smallOneFound == false {
@@ -146,22 +147,22 @@ extension ViewNode {
             }
         }
 
-        // Process items that wont fit
+        // Process items that won't fit
         if remainingChildren > 0 {
             let proposedWidth = remainingWidth / CGFloat(remainingChildren)
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
+                let wantedWidth = child.value.wantedWidthForProposal(proposedWidth, otherLength: givenHeight, node: child)
                 let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: proposedWidth, node: child)
-                child.value.size.height = wantedHeight
-                child.value.size.width = proposedWidth
+                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
                 remainingWidth -= proposedWidth
 
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
-                child.processor = "* HStack"
 
-                child.calculateSize(givenWidth: proposedWidth, givenHeight: wantedHeight)
+                child.calculateChildSizes(givenWidth: proposedWidth, givenHeight: wantedHeight)
             }
         }
 
@@ -173,6 +174,11 @@ extension ViewNode {
             }
         }
 
+        value.size.width = children.map({ $0.value.size.width }).reduce(0, +) + internalSpacingRequirements(for: spacing)
+        value.size.height = children.map({ $0.value.size.height }).max()!
+
+        // Align vertically in the given area
+        let alignmentHeight = givenHeight
         switch alignment {
         case .top:
             for child in children {
@@ -180,32 +186,22 @@ extension ViewNode {
             }
         case .center:
             for child in children {
-                child.value.origin.y = (givenHeight - child.value.size.height) / 2
+                child.value.origin.y = (alignmentHeight - child.value.size.height) / 2
             }
         case .bottom:
             for child in children {
-                child.value.origin.y = givenHeight - child.value.size.height
+                child.value.origin.y = alignmentHeight - child.value.size.height
             }
         case .firstTextBaseline, .lastTextBaseline:
             fatalError()
         }
 
-        value.size.width = children.map({ $0.value.size.width }).reduce(0, +) + internalSpacingRequirements(for: spacing)
-        value.size.height = children.map({ $0.value.size.height }).max()!
-
-        // Center horizontally in the given area
-        let offset = (givenWidth - value.size.width) / 2
-        for child in children {
-            child.value.origin.x += offset
-        }
-
-        processor = "HStack"
     }
 
-    private func calculateNodeWithVerticallyStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: HorizontalAlignment, spacing _spacing: CGFloat?) {
+    private func layoutVStackedNodes(givenWidth: CGFloat, givenHeight: CGFloat, alignment: HorizontalAlignment, spacing _spacing: CGFloat?) {
         let spacing = _spacing ?? Self.defaultSpacing
 
-        // Substract all spacings from the height
+        // Subtract all spacings from the height
         var remainingHeight = givenHeight - internalSpacingRequirements(for: spacing)
 
         // Keep record of elements that we already processed
@@ -220,27 +216,38 @@ extension ViewNode {
 
             // Images have their own intrinsic size
             if child.value is ImageDrawable {
-                let height = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
-                child.value.size.width = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
-                child.value.size.height = height
-                remainingHeight -= height
+                let wantedWidth = child.value.wantedWidthForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
+                let wantedHeight = child.value.wantedHeightForProposal(CGFloat.greatestFiniteMagnitude, otherLength: nil, node: child)
+                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
+                remainingHeight -= wantedHeight
 
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
-                child.processor = "* VStack"
             }
 
             // Dividers claim the whole width that is given and set their own height
             if child.value is DividerDrawable {
-                let height = child.value.wantedHeightForProposal(givenHeight, otherLength: nil, node: child)
-                child.value.size.width = child.value.wantedWidthForProposal(givenWidth, otherLength: nil, node: child)
-                child.value.size.height = height
-                remainingHeight -= height
+                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: nil, node: child)
+                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: nil, node: child)
+                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
+                remainingHeight -= wantedHeight
 
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
-                child.processor = "* VStack"
             }
+
+//            if child.value is TextDrawable {
+//                let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: givenHeight, node: child)
+//                let wantedHeight = child.value.wantedHeightForProposal(givenHeight, otherLength: givenWidth, node: child)
+//                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+//
+//                remainingHeight -= wantedHeight
+//
+//                processedNodeIndices.insert(index)
+//                remainingChildren -= 1
+//            }
         }
 
         // Process items that would fit inside the proposal
@@ -257,15 +264,14 @@ extension ViewNode {
                 if proposedHeight > wantedHeight {
                     smallOneFound = true
                     let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: wantedHeight, node: child)
-                    child.value.size.width = wantedWidth
-                    child.value.size.height = wantedHeight
+                    child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
                     remainingHeight -= wantedHeight
 
                     processedNodeIndices.insert(index)
                     remainingChildren -= 1
-                    child.processor = "* VStack"
 
-                    child.calculateSize(givenWidth: wantedWidth, givenHeight: wantedHeight)
+                    child.calculateChildSizes(givenWidth: wantedWidth, givenHeight: wantedHeight)
                 }
             }
             if smallOneFound == false {
@@ -273,22 +279,22 @@ extension ViewNode {
             }
         }
 
-        // Process items that wont fit
+        // Process items that won't fit
         if remainingChildren > 0 {
             let proposedHeight = remainingHeight / CGFloat(remainingChildren)
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
                 let wantedWidth = child.value.wantedWidthForProposal(givenWidth, otherLength: proposedHeight, node: child)
-                child.value.size.width = wantedWidth
-                child.value.size.height = proposedHeight
+                let wantedHeight = child.value.wantedHeightForProposal(proposedHeight, otherLength: givenWidth, node: child)
+                child.value.size = CGSize(width: wantedWidth, height: wantedHeight)
+
                 remainingHeight -= child.value.size.height
 
                 processedNodeIndices.insert(index)
                 remainingChildren -= 1
-                child.processor = "* VStack"
 
-                child.calculateSize(givenWidth: wantedWidth, givenHeight: proposedHeight)
+                child.calculateChildSizes(givenWidth: wantedWidth, givenHeight: proposedHeight)
             }
         }
 
@@ -300,7 +306,11 @@ extension ViewNode {
             }
         }
 
+        value.size.width = children.map({ $0.value.size.width }).max()!
+        value.size.height = children.map({ $0.value.size.height }).reduce(0, +) + internalSpacingRequirements(for: spacing)
+
         // Align horizontally in the given area
+        let alignmentWidth = givenWidth
         switch alignment {
         case .leading:
             for child in children {
@@ -308,23 +318,12 @@ extension ViewNode {
             }
         case .center:
             for child in children {
-                child.value.origin.x = (givenWidth - child.value.size.width) / 2
+                child.value.origin.x = (alignmentWidth - child.value.size.width) / 2
             }
         case .trailing:
             for child in children {
-                child.value.origin.x = givenWidth - child.value.size.width
+                child.value.origin.x = alignmentWidth - child.value.size.width
             }
         }
-
-        value.size.width = children.map({ $0.value.size.width }).max()!
-        value.size.height = children.map({ $0.value.size.height }).reduce(0, +) + internalSpacingRequirements(for: spacing)
-
-        // Center vertically in the given area
-        let offset = (givenHeight - value.size.height) / 2
-        for child in children {
-            child.value.origin.y += offset
-        }
-
-        processor = "VStack"
     }
 }

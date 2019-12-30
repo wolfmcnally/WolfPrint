@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreGraphics
+import WolfGeometry
 
 public class HostingContext<Content: View> {
     private var rootView: Content
@@ -15,6 +16,10 @@ public class HostingContext<Content: View> {
     private var debugViews: Bool
 
     public var rootNode: ViewNode
+
+    private var displayBounds: CGRect {
+        CGRect(origin: .zero, size: displaySize)
+    }
 
     public init(rootView: Content, context: CGContext, displaySize: CGSize, debugViews: Bool = false) {
         self.rootView = rootView
@@ -32,6 +37,8 @@ public class HostingContext<Content: View> {
         }
 
         calculateTreeSizes()
+        centerTreeInDisplay()
+        
         if debugViews {
             print(rootNode.lineBasedDescription.replacingOccurrences(of: "WolfPrint.", with: ""))
         }
@@ -39,8 +46,20 @@ public class HostingContext<Content: View> {
     }
 
     private func calculateTreeSizes() {
-        rootNode.calculateSize(givenWidth: displaySize.width, givenHeight: displaySize.height)
+        rootNode.calculateChildSizes(givenWidth: displaySize.width, givenHeight: displaySize.height)
         rootNode.value.size = displaySize
+    }
+
+    private func centerTreeInDisplay() {
+        let bounds = rootNode.children.reduce(CGRect.null) { rect, child in
+            rect.union(child.value.rect)
+        }
+
+        let offset = displayBounds.midXmidY - bounds.midXmidY
+
+        rootNode.children.forEach { child in
+            child.value.origin = child.value.origin + offset
+        }
     }
 
     private func drawNodesRecursively(node: ViewNode) {
@@ -164,7 +183,7 @@ public class HostingContext<Content: View> {
             context.restoreGState()
         }
 
-        if node.isBranch {
+        if node.hasChildren {
             for child in node.children {
                 drawNodesRecursively(node: child)
             }

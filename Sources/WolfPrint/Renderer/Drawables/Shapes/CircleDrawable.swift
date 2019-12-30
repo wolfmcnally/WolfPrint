@@ -5,7 +5,6 @@ public struct CircleDrawable: Drawable {
     public var size: CGSize = .zero
 
     public init() {
-
     }
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {

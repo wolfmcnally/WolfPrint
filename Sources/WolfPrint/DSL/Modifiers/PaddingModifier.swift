@@ -2,7 +2,7 @@ import Foundation
 import CoreGraphics
 
 public struct PaddingModifier: ViewModifier {
-    static let defaultPadding: CGFloat = 8
+    static let defaultPadding: CGFloat = 20
 
     public typealias Body = Never
     public typealias Content = View

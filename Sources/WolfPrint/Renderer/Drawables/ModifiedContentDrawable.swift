@@ -20,12 +20,6 @@ public struct ModifiedContentDrawable<Modifier>: Drawable where Modifier : ViewM
     }
 }
 
-extension ModifiedContentDrawable {
-    public var passthrough: Bool {
-        return true
-    }
-}
-
 
 extension ModifiedContentDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {

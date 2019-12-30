@@ -55,7 +55,7 @@ extension Node {
     /// Returns all descendants, traversing the entire tree.
     public var descendants: [Self] {
         var nodes = [Self]()
-        if isBranch {
+        if hasChildren {
             nodes.append(contentsOf: children)
             for child in children {
                 nodes.append(contentsOf: child.descendants)
@@ -84,13 +84,13 @@ extension Node {
     // MARK: - Branches
 
     /// A Boolean value indicating whether the node has children.
-    public var isBranch: Bool {
+    public var hasChildren: Bool {
         return !children.isEmpty
     }
 
     /// Returns all nodes with at least one child.
     public var branches: [Self] {
-        return children.filter { $0.isBranch }
+        return children.filter { $0.hasChildren }
     }
 
     // MARK: - Siblings
