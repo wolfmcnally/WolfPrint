@@ -2,12 +2,17 @@ import CoreGraphics
 
 public struct ModifiedContentDrawable<Modifier>: Drawable where Modifier : ViewModifier {
     public var origin: CGPoint = .zero
-    public var size: CGSize = .zero
-    {
-        didSet {
-            print("didSet: \(size)")
+
+    private var _size: CGSize = .zero
+    public var size: CGSize {
+        get { return _size }
+        set {
+            if _size == .zero {
+                _size = newValue
+            }
         }
     }
+//    public var size: CGSize = .zero
 
     let modifier: Modifier
 

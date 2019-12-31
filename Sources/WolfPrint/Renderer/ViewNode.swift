@@ -34,10 +34,6 @@ extension ViewNode {
     }
 
     public func calculateChildSizes(givenWidth: CGFloat, givenHeight: CGFloat) {
-        if value is ModifiedContentDrawable<PaddingModifier> {
-            print("🔥 \(self)")
-            print("💦 givenWidth: \(givenWidth)")//", wantedWidth: \(wantedWidth)")
-        }
         switch value {
         case let drawable as HStackDrawable:
             layoutHStackedNodes(givenWidth: givenWidth, givenHeight: givenHeight, alignment: drawable.alignment, spacing: drawable.spacing)

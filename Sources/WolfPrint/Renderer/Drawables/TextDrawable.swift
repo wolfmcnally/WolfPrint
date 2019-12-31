@@ -4,7 +4,17 @@ import UIKit
 
 public struct TextDrawable: Drawable {
     public var origin: CGPoint = .zero
-    public var size: CGSize = .zero
+
+    private var _size: CGSize = .zero
+    public var size: CGSize {
+        get { return _size }
+        set {
+            if _size == .zero {
+                _size = newValue
+            }
+        }
+    }
+//    public var size: CGSize = .zero
 
     public let text: String
     public let modifiers: [Text.Modifier]
