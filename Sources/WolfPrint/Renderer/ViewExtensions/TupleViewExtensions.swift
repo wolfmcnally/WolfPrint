@@ -10,7 +10,7 @@ extension TupleView: ViewBuildable {
                 viewBuildable.buildDebugTree(tree: &tree, parent: parent)
             } else {
                 guard let optionalValue = child.value as? OptionalProtocol else {
-                    print("Can't render custom views, yet.")
+                    print("Can't render custom views yet.")
                     continue
                 }
                 guard optionalValue.isSome else {

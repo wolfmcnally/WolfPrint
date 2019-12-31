@@ -115,7 +115,8 @@ extension ViewNode {
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
-                let proposedWidth = remainingWidth / CGFloat(remainingChildren)
+//                let proposedWidth = remainingWidth / CGFloat(remainingChildren)
+                let proposedWidth = remainingWidth
                 let wantedWidth = child.value.wantedWidthForProposal(proposedWidth, otherLength: givenHeight, node: child)
                 // When an element fits, it should take what it needs
                 if wantedWidth < proposedWidth {
@@ -236,7 +237,8 @@ extension ViewNode {
             for (index, child) in children.enumerated() {
                 guard !processedNodeIndices.contains(index) else { continue }
 
-                let proposedHeight = remainingHeight / CGFloat(remainingChildren)
+//                let proposedHeight = remainingHeight / CGFloat(remainingChildren)
+                let proposedHeight = remainingHeight
                 let wantedHeight = child.value.wantedHeightForProposal(proposedHeight, otherLength: givenWidth, node: child)
                 // When an element fits, it should take what it needs
                 if wantedHeight < proposedHeight {
