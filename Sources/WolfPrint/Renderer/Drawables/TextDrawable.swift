@@ -45,14 +45,20 @@ public struct TextDrawable: Drawable {
         self.modifiers = modifiers
     }
 
+    private func wantedSize(proposedWidth: CGFloat?, proposedHeight: CGFloat?) -> CGSize {
+        let width = proposedWidth ?? CGFloat.greatestFiniteMagnitude
+        // The line limit would dictate the height. For now just let the text be as long as it wants.
+//        let height = proposedHeight ?? CGFloat.greatestFiniteMagnitude
+        let height = CGFloat.greatestFiniteMagnitude
+        return resolvedFont.osFont.sizeForText(text, in: CGSize(width: width, height: height))
+    }
+
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        let height = size.height > 0 ? size.height : otherLength ?? CGFloat.greatestFiniteMagnitude
-        return resolvedFont.osFont.sizeForText(text, in: CGSize(width: proposedWidth, height: height)).width
+        wantedSize(proposedWidth: proposedWidth, proposedHeight: otherLength).width
     }
 
     public func wantedHeightForProposal(_ proposedHeight: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {
-        let width = size.width > 0 ? size.width : otherLength ?? CGFloat.greatestFiniteMagnitude
-        return resolvedFont.osFont.sizeForText(text, in: CGSize(width: width, height: proposedHeight)).height
+        wantedSize(proposedWidth: otherLength, proposedHeight: proposedHeight).height
     }
 }
 

@@ -164,7 +164,7 @@ extension ViewNode {
         }
 
         value.size.width = children.map({ $0.value.size.width }).reduce(0, +) + internalSpacingRequirements(for: spacing)
-        value.size.height = children.map({ $0.value.size.height }).max()!
+        value.size.height = children.map({ $0.value.size.height }).max() ?? 0
 
         // Align vertically in the given area
         let alignmentHeight = value.size.height
@@ -284,7 +284,7 @@ extension ViewNode {
             }
         }
 
-        value.size.width = children.map({ $0.value.size.width }).max()!
+        value.size.width = children.map({ $0.value.size.width }).max() ?? 0
         value.size.height = children.map({ $0.value.size.height }).reduce(0, +) + internalSpacingRequirements(for: spacing)
 
         // Align horizontally in the given area

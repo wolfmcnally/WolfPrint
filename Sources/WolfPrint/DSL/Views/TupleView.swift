@@ -1,9 +1,9 @@
 public struct TupleView<T>: View {
-    public var value: T
+    public var content: T
     public typealias Body = Never
 
-    public init(_ value: T) {
-        self.value = value
+    public init(_ content: T) {
+        self.content = content
     }
 }
 
