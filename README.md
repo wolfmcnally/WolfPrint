@@ -32,14 +32,14 @@ VStack {
 
 ### The demo application window.
 
-![](Images/AppWindow.jpg)
+<img src="Images/AppWindow.jpg" alt="drawing" width="50%"/>
 
 ### Clicking the Print button at the bottom shows the Print Preview screen.
 
-![](Images/PrintPreview.jpg)
+<img src="Images/PrintPreview.jpg" alt="drawing" width="50%"/>
 
 ### Printing to PDF results in this displayed in Preview.
 
-![](Images/PDFOutput.jpg)
+<img src="Images/PDFOutput.jpg" alt="drawing" width="70%"/>
 
 The final PDF file is [here](Images/PDF.pdf).
