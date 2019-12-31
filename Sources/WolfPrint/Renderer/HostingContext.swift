@@ -131,7 +131,12 @@ public class HostingContext<Content: View> {
 
         if let imageNode = node.value as? ImageDrawable {
 //            let uiColor = (foregroundColor ?? Color.primary).uiColor(for: colorScheme)
-            imageNode.uiImage.draw(at: rect.origin)
+            context.saveGState()
+            context.interpolationQuality = imageNode.interpolation?.cgInterpolationQuality ?? .default
+            let uiImage = imageNode.uiImage
+            // context.draw(uiImage.cgImage!, in: rect) // flipped
+            uiImage.draw(in: rect)
+            context.restoreGState()
         }
 
         if let _ = node.value as? CircleDrawable {

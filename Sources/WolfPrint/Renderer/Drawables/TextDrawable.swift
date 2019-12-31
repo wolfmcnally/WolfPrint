@@ -58,6 +58,6 @@ public struct TextDrawable: Drawable {
 
 extension TextDrawable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "Text [\(origin), \(size)] {text: \(text), font: \(resolvedFont)}"
+        return "Text [\(origin), \(size)] {text: \"\(text)\", font: \(resolvedFont)}"
     }
 }

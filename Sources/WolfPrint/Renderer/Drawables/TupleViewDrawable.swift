@@ -5,7 +5,6 @@ struct TupleViewDrawable: Drawable {
     public var size: CGSize = .zero
 
     init() {
-
     }
 
     public func wantedWidthForProposal(_ proposedWidth: CGFloat, otherLength: CGFloat? = nil, node: ViewNode) -> CGFloat {

@@ -1,13 +1,16 @@
 import Foundation
 
 public struct Image: Equatable {
-    public var _provider: AnyImageProviderBox
-    public static func == (lhs: Image, rhs: Image) -> Bool {
-        return ObjectIdentifier(lhs._provider) == ObjectIdentifier(rhs._provider)
+    public var provider: AnyImageProviderBox
+    public var interpolation: Interpolation?
+
+    init(provider: AnyImageProviderBox, interpolation: Interpolation? = nil) {
+        self.provider = provider
+        self.interpolation = interpolation
     }
 
-    public init(provider: AnyImageProviderBox) {
-        self._provider = provider
+    public static func == (lhs: Image, rhs: Image) -> Bool {
+        return ObjectIdentifier(lhs.provider) == ObjectIdentifier(rhs.provider)
     }
 }
 
@@ -38,5 +41,20 @@ extension Image {
     }
     public init(systemName: String) {
         fatalError()
+    }
+}
+
+extension Image {
+    public enum Interpolation {
+        case high
+        case medium
+        case low
+        case none
+    }
+}
+
+extension Image {
+    public func interpolation(_ interpolation: Interpolation) -> Image {
+        return Image(provider: provider, interpolation: interpolation)
     }
 }
